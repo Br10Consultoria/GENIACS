@@ -19,9 +19,9 @@ services:
     env_file:
       - ./genieacs/config.env
     ports:
-      - "7548:7547"
-      - "7558:7557"
-      - "7568:7567"
+      - "7547:7547"
+      - "7557:7557"
+      - "7567:7567"
     volumes:
       - genieacs_data:/opt/genieacs
     command: >
@@ -40,7 +40,7 @@ services:
       - GENIEACS_API=http://genieacs:7557
       - NODE_ENV=production
     ports:
-      - "7578:3000"
+      - "3000:3000"
 
 volumes:
   mongo_data:
