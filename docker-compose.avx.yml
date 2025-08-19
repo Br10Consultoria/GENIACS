@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  genieacs:
+    build: ./genieacs
+    container_name: genieacs
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    env_file:
+      - ./genieacs/config.env
+    ports:
+      - "7548:7547"
+      - "7558:7557"
+      - "7568:7567"
+    volumes:
+      - genieacs_data:/opt/genieacs
+    command: >
+      bash -c "genieacs-cwmp &
+               genieacs-nbi &
+               genieacs-fs &
+               tail -f /dev/null"
+
+  genieacs-gui:
+    build: ./genieacs-gui
+    container_name: genieacs-gui
+    restart: unless-stopped
+    depends_on:
+      - genieacs
+    environment:
+      - GENIEACS_API=http://genieacs:7557
+      - NODE_ENV=production
+    ports:
+      - "7578:3000"
+
+volumes:
+  mongo_data:
+  genieacs_data:
