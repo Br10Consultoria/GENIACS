@@ -1,4 +1,5 @@
 genieacs-docker/
+├── install.sh      <<<<<<<<<<<<
 ├── docker-compose.avx.yml
 ├── docker-compose.noavx.yml
 ├── genieacs/
@@ -7,10 +8,5 @@ genieacs-docker/
 ├── genieacs-gui/
 │   └── Dockerfile
 ├── scripts/
-│   ├── install-docker.sh
-│   ├── check-avx.sh
-│   ├── up.sh
-│   ├── down.sh
-│   ├── logs.sh
-│   └── clean.sh
+│   └── manage.sh
 └── README.md
