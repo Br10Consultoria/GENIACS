@@ -1,0 +1,15 @@
+FROM debian:12.10-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_VERSION=18
+
+RUN apt-get update && apt-get install -y \
+    curl gnupg build-essential ca-certificates git python3 python3-pip
+
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
+    apt-get install -y nodejs
+
+RUN npm install -g genieacs@1.2.9
+
+WORKDIR /opt/genieacs
+EXPOSE 7547 7557 7567
