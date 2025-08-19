@@ -11,31 +11,35 @@ if [[ "$EUID" -ne 0 ]]; then
    exit 1
 fi
 
-# Atualizações e deps
+echo "📦 Atualizando sistema..."
 apt-get update -y && apt-get upgrade -y
-apt-get install -y curl apt-transport-https ca-certificates unzip gnupg lsb-release git
 
-# Instalar Docker
-echo "🐳 Instalando Docker + Compose..."
+echo "🧹 Removendo docker antigo (se existir)..."
 apt-get remove -y docker docker-engine docker.io containerd runc || true
+
+echo "📥 Instalando dependências..."
+apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release unzip
+
+echo "🔑 Configurando repositório Docker..."
 mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-  | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 systemctl enable docker
 systemctl start docker
 
-echo "✅ Docker: $(docker --version)"
-echo "✅ Compose: $(docker compose version)"
+echo "✅ Docker versão: $(docker --version)"
+echo "✅ Docker Compose versão: $(docker compose version)"
 
-# Já estamos no diretório local com os arquivos
 chmod +x scripts/manage.sh
 
-# Sobe stack automaticamente
+echo "🚀 Subindo a stack do GenieACS..."
 ./scripts/manage.sh up
 
 IP=$(hostname -I | awk '{print $1}')
