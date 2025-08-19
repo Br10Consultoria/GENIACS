@@ -1,12 +1,13 @@
-genieacs-docker/
-├── install.sh      <<<<<<<<<<<<
-├── docker-compose.avx.yml
-├── docker-compose.noavx.yml
-├── genieacs/
+.
+├── genieacs/             # Backend (cwmp, nbi, fs)
 │   ├── Dockerfile
 │   └── config.env
-├── genieacs-gui/
+├── genieacs-gui/         # Interface GUI
 │   └── Dockerfile
+├── genieacs-master.zip   # Arquivo com o código completo
+├── docker-compose.avx.yml
+├── docker-compose.noavx.yml
+├── install.sh
 ├── scripts/
 │   └── manage.sh
 └── README.md
