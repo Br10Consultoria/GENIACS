@@ -12,10 +12,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY genieacs-master.zip /tmp/genieacs.zip
+COPY genieacs-ui-overrides/ /tmp/genieacs-ui-overrides/
 
 RUN unzip /tmp/genieacs.zip -d /tmp \
     && mv /tmp/genieacs-master/* /opt/genieacs/ \
-    && rm -rf /tmp/genieacs.zip /tmp/genieacs-master \
+    && if [ -d /tmp/genieacs-ui-overrides ]; then cp -a /tmp/genieacs-ui-overrides/. /opt/genieacs/; fi \
+    && rm -rf /tmp/genieacs.zip /tmp/genieacs-master /tmp/genieacs-ui-overrides \
     && git init \
     && git config user.email "build@local" \
     && git config user.name "local-build" \

@@ -76,12 +76,13 @@ detect_avx
 case "${1:-help}" in
   up)
     ensure_env
-    compose up -d --build
+    compose build genieacs-cwmp
+    compose up -d
     compose ps
     ;;
   build)
     ensure_env
-    compose build
+    compose build genieacs-cwmp
     ;;
   down)
     compose down

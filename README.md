@@ -4,6 +4,8 @@ Este repositório empacota o **GenieACS** em uma stack Docker Compose com MongoD
 
 A stack detecta automaticamente se a CPU possui suporte a **AVX**. Em máquinas com AVX, ela usa MongoDB 6.0; em máquinas sem AVX, usa MongoDB 4.4. A porta do MongoDB não é exposta no host por padrão, reduzindo a superfície de ataque.
 
+A interface web recebeu uma camada visual customizada em `genieacs-ui-overrides/`, aplicada automaticamente no build da imagem Docker. O redesign mantém as rotas e funcionalidades originais do GenieACS, mas moderniza o layout com tema claro, cartões, navegação em português, tela de login profissional, tabelas mais legíveis e ajustes responsivos inspirados em painéis ACS atuais.
+
 ## Como subir em servidor Ubuntu/Debian
 
 Se o servidor ainda não tem Docker instalado, use o instalador. Ele instala dependências, configura o timezone como `America/Bahia`, habilita o Docker e chama o script de subida da stack.
@@ -41,6 +43,26 @@ Após subir, acesse a interface web em:
 ```text
 http://IP_DO_SERVIDOR:3000
 ```
+
+## Atualizar uma instalação existente
+
+Se você já instalou a versão anterior no servidor e quer aplicar a nova interface publicada no GitHub, execute dentro da pasta do projeto:
+
+```bash
+cd GENIACS
+git pull
+./scripts/manage.sh down
+./scripts/manage.sh up
+```
+
+O comando `up` reconstrói a imagem quando detecta alterações no Dockerfile ou nos arquivos de interface. Se desejar forçar a reconstrução manualmente, use:
+
+```bash
+docker compose -f docker-compose.avx.yml build --no-cache genieacs
+./scripts/manage.sh up
+```
+
+Em servidores sem AVX, troque `docker-compose.avx.yml` por `docker-compose.noavx.yml`.
 
 ## Comandos de operação
 
@@ -95,6 +117,7 @@ nano .env
 | Segurança | Havia credenciais `admin/admin` e MongoDB exposto ao host. | Credenciais fracas foram removidas, secret JWT é obrigatório/gerado e MongoDB fica apenas na rede interna. |
 | Operação | `reset` executava limpeza global do Docker. | `reset` remove apenas recursos deste projeto. |
 | Configuração | Variáveis antigas não eram reconhecidas pelo GenieACS atual. | `config.env` usa variáveis oficiais com prefixo `GENIEACS_`. |
+| Interface web | Visual original do GenieACS era técnico, pouco responsivo e sem identidade operacional. | Tema GENIACS com layout claro, menu em português, login moderno, cartões, sombras suaves e responsividade melhorada. |
 
 ## Observações de produção
 
