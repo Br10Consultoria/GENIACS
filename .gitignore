@@ -1,0 +1,17 @@
+# Segredos locais
+.env
+*.local
+
+# Logs e artefatos temporários
+*.log
+*.patch
+ui-root-http.txt
+audit_notes.md
+npm-audit.json
+RELATORIO_AUDITORIA_GENIACS.md
+
+# Dependências e builds locais
+node_modules/
+dist/
+.cache/
+.tmp/

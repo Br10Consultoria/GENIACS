@@ -1,0 +1,11 @@
+.git
+.env
+*.log
+node_modules
+dist
+.cache
+.tmp
+RELATORIO_AUDITORIA_GENIACS.md
+audit_notes.md
+npm-audit.json
+ui-root-http.txt

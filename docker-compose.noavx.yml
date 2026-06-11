@@ -1,48 +1,125 @@
-version: "3.8"
-
 services:
   mongodb:
     image: mongo:4.4
-    container_name: mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    command: ["mongod", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
     volumes:
       - mongo_data:/data/db
-    command: ["--wiredTigerCacheSizeGB", "1"]
+    networks:
+      - geniacs_internal
+    healthcheck:
+      test: ["CMD-SHELL", "(mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' || mongo --quiet --eval 'db.adminCommand({ ping: 1 }).ok') | grep 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
-  genieacs:
-    build: ./genieacs
-    container_name: genieacs
+  genieacs-cwmp:
+    image: geniacs-genieacs:local
+    build:
+      context: .
+      dockerfile: ./genieacs/Dockerfile
     restart: unless-stopped
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     env_file:
       - ./genieacs/config.env
+    environment:
+      GENIEACS_UI_JWT_SECRET: ${GENIEACS_UI_JWT_SECRET:?Defina GENIEACS_UI_JWT_SECRET no arquivo .env}
+      TZ: ${TZ:-America/Bahia}
+    command: ["genieacs-cwmp"]
     ports:
-      - "7547:7547"
-      - "7557:7557"
-      - "7567:7567"
-    volumes:
-      - genieacs_data:/opt/genieacs
-    command: >
-      bash -c "genieacs-cwmp &
-               genieacs-nbi &
-               genieacs-fs &
-               tail -f /dev/null"
+      - "${CWMP_BIND:-0.0.0.0}:${CWMP_PORT:-7547}:7547"
+    networks:
+      - geniacs_internal
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const net=require('net'); const s=net.connect(7547,'127.0.0.1',()=>process.exit(0)); s.on('error',()=>process.exit(1)); setTimeout(()=>process.exit(1),3000);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
-  genieacs-gui:
-    build: ./genieacs-gui
-    container_name: genieacs-gui
+  genieacs-nbi:
+    image: geniacs-genieacs:local
     restart: unless-stopped
     depends_on:
-      - genieacs
+      mongodb:
+        condition: service_healthy
+    env_file:
+      - ./genieacs/config.env
     environment:
-      - GENIEACS_API=http://genieacs:7557
-      - NODE_ENV=production
+      GENIEACS_UI_JWT_SECRET: ${GENIEACS_UI_JWT_SECRET:?Defina GENIEACS_UI_JWT_SECRET no arquivo .env}
+      TZ: ${TZ:-America/Bahia}
+    command: ["genieacs-nbi"]
     ports:
-      - "3000:3000"
+      - "${NBI_BIND:-127.0.0.1}:${NBI_PORT:-7557}:7557"
+    networks:
+      - geniacs_internal
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const net=require('net'); const s=net.connect(7557,'127.0.0.1',()=>process.exit(0)); s.on('error',()=>process.exit(1)); setTimeout(()=>process.exit(1),3000);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  genieacs-fs:
+    image: geniacs-genieacs:local
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    env_file:
+      - ./genieacs/config.env
+    environment:
+      GENIEACS_UI_JWT_SECRET: ${GENIEACS_UI_JWT_SECRET:?Defina GENIEACS_UI_JWT_SECRET no arquivo .env}
+      TZ: ${TZ:-America/Bahia}
+    command: ["genieacs-fs"]
+    ports:
+      - "${FS_BIND:-0.0.0.0}:${FS_PORT:-7567}:7567"
+    networks:
+      - geniacs_internal
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const net=require('net'); const s=net.connect(7567,'127.0.0.1',()=>process.exit(0)); s.on('error',()=>process.exit(1)); setTimeout(()=>process.exit(1),3000);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  genieacs-ui:
+    image: geniacs-genieacs:local
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    env_file:
+      - ./genieacs/config.env
+    environment:
+      GENIEACS_UI_JWT_SECRET: ${GENIEACS_UI_JWT_SECRET:?Defina GENIEACS_UI_JWT_SECRET no arquivo .env}
+      TZ: ${TZ:-America/Bahia}
+    command: ["genieacs-ui"]
+    ports:
+      - "${UI_BIND:-0.0.0.0}:${UI_PORT:-3000}:3000"
+    networks:
+      - geniacs_internal
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const net=require('net'); const s=net.connect(3000,'127.0.0.1',()=>process.exit(0)); s.on('error',()=>process.exit(1)); setTimeout(()=>process.exit(1),3000);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   mongo_data:
-  genieacs_data:
+
+networks:
+  geniacs_internal:
+    driver: bridge
